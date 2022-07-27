@@ -2,7 +2,7 @@ import os
 from logging.config import dictConfig
 
 from flask import Flask, request, abort
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+from itsdangerous import SignatureExpired, TimedSerializer
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -35,7 +35,7 @@ def upload():
         abort(400, 'No {} header found in request.'.format(TOKEN_HEADER_NAME))
 
     authHeader = request.headers.get(TOKEN_HEADER_NAME)
-    s = URLSafeTimedSerializer(TOKEN_SECRET_KEY)
+    s = TimedSerializer(TOKEN_SECRET_KEY)
     try:
         tokenData, ts = s.loads(authHeader, max_age=TOKEN_MAX_AGE, return_timestamp=True)
     except SignatureExpired as err:
