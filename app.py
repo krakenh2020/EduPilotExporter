@@ -52,7 +52,7 @@ def upload():
             abort(400, 'No type and/or id GET parameter found in request.')
 
         if 'credential' not in request.files:
-            abort(400, 'No credential file found in request.')
+            abort(400, 'No credential file found in request: {}'.format(request.files))
 
         credential = request.files['credential']
         filetype = secure_filename(request.args.get('type'))
