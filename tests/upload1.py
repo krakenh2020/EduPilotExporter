@@ -3,7 +3,7 @@ from itsdangerous import TimestampSigner, TimedSerializer
 
 url = 'http://127.0.0.1:5000/upload'
 
-SECRET_KEY = "foobar"
+SECRET_KEY = "fooKRAKENbar"
 
 
 def upload(filename, type, id):
@@ -11,7 +11,7 @@ def upload(filename, type, id):
     token = s.dumps('KRAKEN')
     print(token)
 
-    headers = {'X-KRAKEN-TOKEN': token}
+    headers = {'Authorization': token}
     parameters = {'id': id,
                   'type': type}
     files = {'credential': open(filename, 'r')}

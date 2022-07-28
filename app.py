@@ -2,13 +2,14 @@ import os
 from logging.config import dictConfig
 
 from flask import Flask, request, abort
-from itsdangerous import SignatureExpired, TimedSerializer
+from itsdangerous import SignatureExpired, TimedSerializer, BadTimeSignature
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-TOKEN_SECRET_KEY = "foobar"
-TOKEN_HEADER_NAME = "X-KRAKEN-TOKEN"
+# TODO: load from config or env
+TOKEN_SECRET_KEY = "fooKRAKENbar"
+TOKEN_HEADER_NAME = "Authorization"
 TOKEN_MAX_AGE = 5
 
 uploads_dir = os.path.join(app.instance_path, 'uploads')
@@ -37,8 +38,13 @@ def upload():
     authHeader = request.headers.get(TOKEN_HEADER_NAME)
     s = TimedSerializer(TOKEN_SECRET_KEY)
     try:
+        if authHeader.startswith("Bearer"):
+            authHeader = authHeader.lstrip("Bearer").strip()
+
         tokenData, ts = s.loads(authHeader, max_age=TOKEN_MAX_AGE, return_timestamp=True)
     except SignatureExpired as err:
+        abort(400, 'Token expired: {}'.format(err))
+    except BadTimeSignature as err:
         abort(400, 'Token invalid: {}'.format(err))
 
     if request.method == 'POST':
