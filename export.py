@@ -1,7 +1,10 @@
 import json
 import os
+import subprocess
 
 import click
+
+KrakenCryptoToolsPath = "~/go/bin/KrakenCryptoTools"
 
 
 def get_credentials(creds_path, cred_type):
@@ -47,17 +50,31 @@ def write_to_csv(fields, data, output):
             f.write(", ".join(line) + "\n")
 
 
+def sign_csv(output, key_name):
+    binary = os.path.expanduser(KrakenCryptoToolsPath)
+    subprocess.run([binary, "zk-sig", "sign", "-dataset", output, "--keyName", key_name])
+
+
 @click.command()
 @click.option('--path', default='instance/uploads', help='Path to directory with credentials')
 @click.option('--cred_type', default='course-grades', help='course-grades or diplomas')
 @click.option('--output', default='data.csv', help='Path to output file')
-def main(path, cred_type, output):
-    fields = get_fields_for_credential_type(cred_type)
+@click.option('--field', default='grade', help='Only export this field')
+@click.option('--sign', default='zk-keys/kraken-edu-exporter-key1',
+              help='Key to be used with KrakenCryptoTools to sign resulting CSV file')
+def main(path, cred_type, output, field, sign):
+    if field:
+        fields = [field]
+    else:
+        fields = get_fields_for_credential_type(cred_type)
     lines = []
     for cred in get_credentials(path, cred_type):
         line = get_line(cred['credentialSubject'], fields)
         lines.append(line)
     write_to_csv(fields, lines, output)
+
+    if sign:
+        sign_csv(output, sign)
 
 
 if __name__ == '__main__':
