@@ -3,3 +3,5 @@ __pycache__
 .idea/
 uploads
 .env
+*.csv
+zk-keys/*.txt
